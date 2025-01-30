@@ -1,0 +1,18 @@
+{% extends "home.html" %}
+{% block content %}
+
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+<a href='{% url "seq" project_name  %}' class="btn"> {{ sequence_name }}</a>
+
+<div class="row row-cols-5">
+  {% for shot in shots %}
+  <div class="col">
+    <div class="card" style="width:240px">
+      <img src="/static/images/rotoart.gif" class="img-fluid rounded-start" alt="...">
+      <a href='{% url "task" project_name sequence_name shot %}' class="btn"> {{ shot }}</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
