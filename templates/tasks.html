@@ -1,0 +1,21 @@
+{% extends "home.html" %}
+{% block content %}
+
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+<a href='{% url "proj"  %}' class="btn"> {{ sequence_name }}</a>
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+
+<div class="row row-cols-5">
+  {% for task in tasks %}
+  <div class="col">
+    <div class="card" style="width:240px">
+      <img src="/static/images/timecard.gif" class="img-fluid rounded-start" alt="...">
+      <h1 class="btn"> {{ task.attrib }}</h1>
+      <!-- <h6 > {{ task.priority }}</h6> -->
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
