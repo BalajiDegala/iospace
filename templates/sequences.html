@@ -1,0 +1,17 @@
+{% extends "home.html" %}
+{% block content %}
+
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+
+<div class="row row-cols-5">
+  {% for sequence in sequences %}
+  <div class="col">
+    <div class="card" style="width:240px">
+      <img src="/static/images/rocky.gif" class="img-fluid rounded-start" alt="...">
+      <a href='{% url "shot" project_name sequence %}' class="btn"> {{ sequence }}</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
