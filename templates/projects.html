@@ -1,0 +1,17 @@
+{% extends "home.html" %}
+{% block content %}
+
+<a href='{% url "proj"  %}' class="btn"> DD </a>
+
+<div class="row row-cols-5">
+  {% for project in projects %}
+  <div class="col">
+    <div class="card" style="width:240px">
+      <img src="/static/images/ddpipe.gif" class="img-fluid rounded-start" alt="...">
+      <a href='{% url "seq" project %}' class="btn"> {{project}}</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
