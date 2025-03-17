@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 import os
+from pprint import pprint
 
 from django.contrib.auth.decorators import login_required
 
@@ -45,19 +46,35 @@ def show_users(request):
     context = {"users": users }
     return render(request, 'users.html', context)
 def show_my_tasks(request):
-    val = dd_io()
+    val = dd_io(user="balajid")
     projects = val.io_get_projects()
+    tasks = {}
     for i in projects:
-        tasks = val.io_get_user_tasks(i)
+        k = val.io_get_user_tasks(i)
+        tasks[i] = k
     print("tasks",tasks)
-    context = {"tasks": tasks }
-    return render(request, 'my_tasks.html', context)
+    # Flatten the tasks dictionary
+    user_tasks = {}
+    for project, tasks_list in tasks.items():
+        user_tasks[project] = [
+            {
+                'id': task['id'],
+                'name': task['name'],
+                'start_date': task['attrib'].get('startDate', 'N/A'),
+                'end_date': task['attrib'].get('endDate', 'N/A'),
+                'status': task['status'],
+            }
+            for task in tasks_list
+        ]
+    return render(request, 'my_tasks.html', {'tasks_by_show': user_tasks})
 
 def task_detail(request, task_id):
     val = dd_io()  
-    task = val.io_get_task(task_id = task_id)
-    print("task", task)
-    context = {"task": task[0]}
+
+    task = val.io_get_task(task_id=task_id)
+    if not task:
+        return render(request, 'task_detail.html', {'error': 'Task not found'})
+    context = {"task": task[0]}  
     return render(request, 'task_detail.html', context)
 
 

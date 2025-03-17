@@ -4,6 +4,9 @@ from django.urls import path
 from projects.views import home, about, show_projects, show_sequences, show_shots, show_tasks, show_users, get_time_data, show_my_tasks, task_detail
 
 urlpatterns = [
+ path('admin/', admin.site.urls),
+ path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+ path('logout/', auth_views.LogoutView.as_view(), name='logout'),
  path('task/<str:task_id>/', task_detail, name='task_detail'),
  path('projects/', show_projects, name = "proj"),
  path('users/', show_users, name = "user"),

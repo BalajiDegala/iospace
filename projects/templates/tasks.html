@@ -9,10 +9,11 @@
   {% for task in tasks %}
   <div class="col">
     <div class="card" >
+      <a href="{% url 'task_detail' task.id %}">
       <img src="https://robohash.org/{{ task }}" class="img-fluid rounded-start" alt="{{ task }}">
-      <h1 class="btn"> {{ task.attrib }}</h1>
-      <!-- <h6 > {{ task.priority }}</h6> -->
-
+        {{ task.name }}
+    </a>
+    
     </div>
   </div>
   {% endfor %}

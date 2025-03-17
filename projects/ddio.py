@@ -58,14 +58,6 @@ class dd_io():
             print(f"Fetching tasks for user: {self.user}")
             # Attempt to use the assignees filter directly
             ayon_tasks = self.con.get_tasks(project, assignees=self.user)
-            print(f"API response: {ayon_tasks}")
-
-            # If no tasks are returned, fallback to manual filtering
-            if not ayon_tasks:
-                print("No tasks found using the assignees filter. Falling back to manual filtering.")
-                ayon_tasks = self.con.get_tasks(project)
-                ayon_tasks = [task for task in ayon_tasks if self.user in task.get("assignees", [])]
-
             tasks = [task for task in ayon_tasks]
             return tasks
         except Exception as e:
@@ -128,8 +120,6 @@ class dd_io():
             return f"{self.shot} Shot Created successfully on {self.seq} Sequence {self.project} project"
         except Exception as e :
             return e
-
-
 
 from django.apps import AppConfig
 class ProjectsConfig(AppConfig):
