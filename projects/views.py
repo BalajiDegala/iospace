@@ -67,7 +67,7 @@ def show_my_tasks(request):
             for task in tasks_list
         ]
     return render(request, 'my_tasks.html', {'tasks_by_show': user_tasks})
-
+    
 def task_detail(request, task_id):
     val = dd_io()  
 

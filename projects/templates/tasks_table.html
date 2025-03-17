@@ -1,0 +1,39 @@
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Show</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Assignees</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if tasks %}
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.show }}</td>
+                    <td>
+                        <a href="{% url 'task_detail' task.id %}">
+                            {{ task.name }}
+
+                        </a>        
+                    </td>            
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.attrib.priority }}</td>
+                    <td>{{ task.attrib.startDate|date:"Y-m-d" }}</td>
+                    <td>{{ task.attrib.endDate|date:"Y-m-d" }}</td>
+                    <td>{{ task.assignees|join:", " }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center">
+                    No tasks found for the selected criteria.
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
