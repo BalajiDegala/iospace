@@ -1,4 +1,4 @@
-#!/home/balajid/Downloads/git/iospace/env/bin/python3
+#!/dd/tools/packages/iospace/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

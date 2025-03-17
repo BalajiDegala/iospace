@@ -1,0 +1,12 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h2>Task: {{ task.name }}</h2>
+<p><strong>Start Date:</strong> {{ task.startDate }}</p>
+<p><strong>End Date:</strong> {{ task.endDate }}</p>
+<p><strong>Status:</strong> {{ task.status }}</p>
+<p><strong>Description:</strong> {{ task.active }}</p>
+
+<!-- Add a back button -->
+<a href="{% url 'my_tasks' %}" class="btn btn-secondary">Back to My Tasks</a>
+{% endblock %}

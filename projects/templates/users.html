@@ -7,8 +7,8 @@
 <div class="row row-cols-5">
     {% for user in users %}
     <div class="col">
-      <div class="card" style="width:240px">
-        <img src="/static/images/timecard.gif" class="img-fluid rounded-start" alt="...">
+      <div class="card">
+        <img src="https://robohash.org/{{ user }}" class="img-fluid rounded-start" alt="{{ user }}">
         <h1 class="btn"> {{ user }}</h1>
         <!-- <h6 > {{ task.priority }}</h6> -->
   
@@ -18,3 +18,5 @@
   </div>
 
 {% endblock %}
+
+

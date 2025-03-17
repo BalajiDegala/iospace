@@ -41,6 +41,38 @@ class dd_io():
             tasks.append(task)
         return tasks
 
+    def io_get_task(self, task_id):
+        if task_id is not None:
+            ayon_tasks = self.con.get_tasks("HYD", task_ids = task_id)
+        else :
+            print("Please check for task ID")
+            return None
+        tasks = []
+        for task in ayon_tasks:
+            tasks.append(task)
+        return tasks
+
+
+    def io_get_user_tasks(self, project):
+        try:
+            print(f"Fetching tasks for user: {self.user}")
+            # Attempt to use the assignees filter directly
+            ayon_tasks = self.con.get_tasks(project, assignees=self.user)
+            print(f"API response: {ayon_tasks}")
+
+            # If no tasks are returned, fallback to manual filtering
+            if not ayon_tasks:
+                print("No tasks found using the assignees filter. Falling back to manual filtering.")
+                ayon_tasks = self.con.get_tasks(project)
+                ayon_tasks = [task for task in ayon_tasks if self.user in task.get("assignees", [])]
+
+            tasks = [task for task in ayon_tasks]
+            return tasks
+        except Exception as e:
+            print(f"Error fetching tasks: {e}")
+            return []
+
+
     def io_get_sequences(self):
         ayon_sequences = self.con.get_folders(self.project, folder_types="Sequence")
         sequences = []
@@ -96,6 +128,8 @@ class dd_io():
             return f"{self.shot} Shot Created successfully on {self.seq} Sequence {self.project} project"
         except Exception as e :
             return e
+
+
 
 from django.apps import AppConfig
 class ProjectsConfig(AppConfig):

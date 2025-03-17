@@ -7,8 +7,8 @@
 <div class="row row-cols-5">
   {% for shot in shots %}
   <div class="col">
-    <div class="card" style="width:240px">
-      <img src="/static/images/rotoart.gif" class="img-fluid rounded-start" alt="...">
+    <div class="card" >
+      <img src="https://robohash.org/{{ shot }}" class="img-fluid rounded-start" alt="{{ shot }}">
       <a href='{% url "task" project_name sequence_name shot %}' class="btn"> {{ shot }}</a>
     </div>
   </div>

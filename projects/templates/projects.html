@@ -6,8 +6,8 @@
 <div class="row row-cols-5">
   {% for project in projects %}
   <div class="col">
-    <div class="card" style="width:240px">
-      <img src="/static/images/ddpipe.gif" class="img-fluid rounded-start" alt="...">
+    <div class="card" >
+      <img src="https://robohash.org/{{ project }}" class="img-fluid rounded-start" alt="{{ project }}">
       <a href='{% url "seq" project %}' class="btn"> {{project}}</a>
     </div>
   </div>
@@ -15,3 +15,4 @@
 </div>
 
 {% endblock %}
+

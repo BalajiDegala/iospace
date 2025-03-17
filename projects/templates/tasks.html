@@ -8,8 +8,8 @@
 <div class="row row-cols-5">
   {% for task in tasks %}
   <div class="col">
-    <div class="card" style="width:240px">
-      <img src="/static/images/timecard.gif" class="img-fluid rounded-start" alt="...">
+    <div class="card" >
+      <img src="https://robohash.org/{{ task }}" class="img-fluid rounded-start" alt="{{ task }}">
       <h1 class="btn"> {{ task.attrib }}</h1>
       <!-- <h6 > {{ task.priority }}</h6> -->
 

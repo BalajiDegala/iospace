@@ -6,8 +6,8 @@
 <div class="row row-cols-5">
   {% for sequence in sequences %}
   <div class="col">
-    <div class="card" style="width:240px">
-      <img src="/static/images/rocky.gif" class="img-fluid rounded-start" alt="...">
+    <div class="card">
+      <img src="https://robohash.org/{{ sequence }}" class="img-fluid rounded-start" alt="{{ sequence }}">
       <a href='{% url "shot" project_name sequence %}' class="btn"> {{ sequence }}</a>
     </div>
   </div>
