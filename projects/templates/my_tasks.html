@@ -1,78 +1,80 @@
-={% extends 'home.html' %}
+{% extends 'home.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-center">{{ user.username }}'s Tasks</h2>
+<body>
 
-    {% if tasks_by_show %}
-        <div class="row g-4">
-            {% for show, tasks in tasks_by_show.items %}
-                {% if tasks %}
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-secondary text-white">
-                                <h5 class="mb-0">
-                                    <a href="{% url 'seq' show %}" class="text-decoration-none text-white">
-                                        {{ show }}
-                                    </a>
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Task Name</th>
-                                            <th>Type</th>
-                                            <th>Priority</th>
-                                            <th>Resolution</th>
-                                            <th>FPS</th>
-                                            <th>Start Frame</th>
-                                            <th>End Frame</th>
-                                            <th>Status</th>
-                                            <th>Assignees</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for task in tasks %}
+    <div class="container mt-4">
+        <h1> Worksheet -- {{ user.username }} --  </h1>
+
+        {% if tasks_by_show %}
+            <div class="row g-4 ">
+                {% for show, tasks in tasks_by_show.items %}
+                    {% if tasks %}
+                        <div class="col-12">
+                            <div class="mb-4">
+                                <div class="text-white">
+                                    <h2 class="mb-0 text-center">
+                                        <a href="{% url 'seq' show %}" >
+                                            {{ show }}
+                                        </a>
+                                    </h2>
+                                </div>
+                                    <table class="table text-white">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
-                                                        {{ task.name }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ task.taskType }}</td>
-                                                <td>{{ task.attrib.priority }}</td>
-                                                <td>{{ task.attrib.resolutionWidth }}x{{ task.attrib.resolutionHeight }}</td>
-                                                <td>{{ task.attrib.fps }}</td>
-                                                <td>{{ task.attrib.frameStart }}</td>
-                                                <td>{{ task.attrib.frameEnd }}</td>
-                                                <td>
-                                                    <span class="badge 
-                                                        {% if task.status == 'In progress' %}
-                                                            bg-warning text-dark
-                                                        {% elif task.status == 'Completed' %}
-                                                            bg-success
-                                                        {% else %}
-                                                            bg-secondary
-                                                        {% endif %}">
-                                                        {{ task.status }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ task.assignees|join:", " }}</td>
+                                                <th>Task Name</th>
+                                                <th>Type</th>
+                                                <th>Priority</th>
+                                                <th>Resolution</th>
+                                                <th>FPS</th>
+                                                <th>Start Frame</th>
+                                                <th>End Frame</th>
+                                                <th>Status</th>
+                                                <th>Assignees</th>
                                             </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {% for task in tasks %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{% url 'task_detail' task.id %}" >
+                                                            {{ task.name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>{{ task.taskType }}</td>
+                                                    <td>{{ task.start_date }}</td>
+                                                    <td>{{ task.end_date }}</td>
+                                                    <td>{{ task.attrib.fps }}</td>
+                                                    <td>{{ task.frameStart }}</td>
+                                                    <td>{{ task.frameEnd }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if task.status == 'In progress' %}
+                                                                bg-warning text-dark
+                                                            {% elif task.status == 'Completed' %}
+                                                                bg-success
+                                                            {% else %}
+                                                                bg-secondary
+                                                            {% endif %}">
+                                                            {{ task.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ task.assignees|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                             </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info text-center" role="alert">
-            No tasks assigned to you.
-        </div>
-    {% endif %}
-</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center" role="alert">
+                No tasks assigned to you.
+            </div>
+        {% endif %}
+    </div>
+<body>
+
 {% endblock %}

@@ -1,18 +1,80 @@
 {% extends "home.html" %}
 {% block content %}
 
-<a href='{% url "proj"  %}' class="btn"> DD </a>
+<!-- Search Input -->
+<div class="mb-4">
+  <input type="text" id="searchInput" class="form-control" placeholder="Search for a project..." onkeyup="filterProjects()">
+</div>
 
-<div class="row row-cols-5">
+<!-- Top Button -->
+<a href='{% url "proj" %}' class="btn mb-4">DD</a>
+
+<!-- Projects -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="projectsContainer">
   {% for project in projects %}
-  <div class="col">
-    <div class="card" >
-      <img src="https://robohash.org/{{ project }}" class="img-fluid rounded-start" alt="{{ project }}">
-      <a href='{% url "seq" project %}' class="btn"> {{project}}</a>
-    </div>
+  <div class="col project-item">
+    <a href="{% url 'seq' project %}" class="project-button text-decoration-none"
+    style="
+      background-position: 
+      {% if forloop.counter|divisibleby:3 %}center top
+      {% elif forloop.counter|divisibleby:4 %}center center
+      {% else %}center bottom{% endif %};
+    ">
+      <span class="project-text">{{ project }}</span>
+    </a>
   </div>
   {% endfor %}
 </div>
 
-{% endblock %}
+<style>
+  .project-button {
+      position: relative;
+      display: block;
+      height: 200px;
+      background: url('/static/gifs/japan.gif') no-repeat center;
+      background-size: cover;
+      border: 2px solid #007bff;
+      border-radius: 0.25rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+      cursor: pointer;
+  }
+  .project-button:hover {
+      filter: brightness(1.3);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transform: scale(1.02);
+  }
+  .project-text {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 6rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      -webkit-text-stroke: 1.5px #177ddb;
+      border-radius: 8px;
+      text-align: center;
+      width: 90%;
+  }
+</style>
 
+<script>
+
+
+  // Filter function
+  function filterProjects() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const projectItems = document.querySelectorAll('.project-item');
+
+    projectItems.forEach(item => {
+      const projectText = item.textContent.trim().toLowerCase();
+      if (projectText.includes(input)) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+</script>
+
+{% endblock %}

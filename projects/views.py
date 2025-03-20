@@ -12,19 +12,31 @@ from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 import os
 from pprint import pprint
-
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from datetime import datetime
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 def home(request):
-    return render(request, 'home.html')
+    val = dd_io()
+    events = val.io_get_events()
+    context = {"events": []}
+    return render(request, 'home.html', context)
 
 def about(request):
     return render(request, 'about.html')
+
+
 def show_projects(request):
     val = dd_io()
     projects = val.io_get_projects()
     context = {"projects": projects}
+    print(context)
     return render(request, 'projects.html', context)
+
 def show_sequences(request, project_name):
     val = dd_io(project_name)
     sequences = val.io_get_sequences()
@@ -52,7 +64,6 @@ def show_my_tasks(request):
     for i in projects:
         k = val.io_get_user_tasks(i)
         tasks[i] = k
-    print("tasks",tasks)
     # Flatten the tasks dictionary
     user_tasks = {}
     for project, tasks_list in tasks.items():
@@ -63,10 +74,15 @@ def show_my_tasks(request):
                 'start_date': task['attrib'].get('startDate', 'N/A'),
                 'end_date': task['attrib'].get('endDate', 'N/A'),
                 'status': task['status'],
+                "assignees": task['assignees'],
+                "frameStart":  task['attrib'].get('frameStart', 'N/A'),
+                "frameEnd":  task['attrib'].get('frameEnd', 'N/A'),
             }
             for task in tasks_list
         ]
+    print("user_tasks",user_tasks)
     return render(request, 'my_tasks.html', {'tasks_by_show': user_tasks})
+    
     
 def task_detail(request, task_id):
     val = dd_io()  
@@ -79,14 +95,16 @@ def task_detail(request, task_id):
 
 
 
-
-
-
 class MyTable(tables.Table):
     login = tables.Column()
-    date = tables.Column(orderable=True)  # Enable ordering for this column
+    date = tables.Column(orderable=True)
     day = tables.Column()
-    task = tables.Column()
+    task = tables.LinkColumn(
+        'task_detail',
+        args=[tables.A('task_id')],
+        verbose_name='Task',
+        text=lambda record: record.get('task', 'Unknown Task'),
+    )
     start_time = tables.Column()
     stop_time = tables.Column()
     work_time = tables.Column()
@@ -94,11 +112,28 @@ class MyTable(tables.Table):
     department = tables.Column()
 
     class Meta:
-        order_by = "-date"  # Default order: descending by date
+        order_by = "-date"
 
+# View function
 def get_time_data(request):
     # Fetch and sort data by date (descending)
     time_data = list(time_data_collection.find({}, {'_id': 0}).sort("date", -1))
+
+    # Normalize date field to datetime objects for accurate sorting
+
+    for entry in time_data:
+        try:
+            # Normalize date format: Replace colons with hyphens
+            normalized_date = entry['date'].replace(":", "-")
+            entry['date'] = datetime.strptime(normalized_date, '%Y-%m-%d')
+        except ValueError as e:
+            logger.error(f"Error parsing date for entry {entry}: {e}")
+            # Handle entries with invalid dates (e.g., skip or assign a default value)
+            entry['date'] = None
+
+        if 'task' in entry:
+            task_info = list(entry['task'].values())[0]
+            entry['task_id'] = task_info.split('ID: ')[1].split(',')[0] if 'ID: ' in task_info else None
 
     # Manual filtering from GET parameters
     login = request.GET.get("login")
@@ -110,14 +145,13 @@ def get_time_data(request):
     if login:
         time_data = [entry for entry in time_data if login.lower() in entry.get("login", "").lower()]
     if date:
-        time_data = [entry for entry in time_data if entry.get("date") == date]
+        time_data = [entry for entry in time_data if entry.get("date").strftime('%Y-%m-%d') == date]
     if project:
         time_data = [
             entry for entry in time_data if any(project.lower() in p.lower() for p in entry.get("project", []))
         ]
     if system_id:
         time_data = [entry for entry in time_data if system_id.lower() in entry.get("system_id", "").lower()]
-    
     if department:
         time_data = [entry for entry in time_data if department.lower() in entry.get("department", "").lower()]
 
@@ -134,5 +168,6 @@ def get_time_data(request):
         "table": table,
         "page_obj": page_obj,
     }
-    return render(request, 'timecard.html', context)
 
+    logger.debug(f"Rendered context: {context}")
+    return render(request, 'timecard.html', context)

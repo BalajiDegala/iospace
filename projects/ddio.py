@@ -121,6 +121,11 @@ class dd_io():
         except Exception as e :
             return e
 
+    def io_get_events(self):
+        ayon_events = self.con.get_events(limit=100)
+        events = [event for event in ayon_events ]
+        return events
+
 from django.apps import AppConfig
 class ProjectsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'

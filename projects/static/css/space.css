@@ -5,15 +5,15 @@
   --clr-space: #120e1e;
   --clr-space-gr: #271950;
   --clr-star: #E9F8F9;
-  --size: 4rem;
+  --size: 8rem;
   position: relative;
-  outline: 1px solid var(--clr-shadow__border);
+  outline: 10px solid var(--clr-shadow__border);
 }
 
 .button {
-  font-weight: 600;
-  font-size: 7rem;
-  letter-spacing: 1.6rem;
+  font-weight: 500;
+  font-size: 5.5rem;
+  letter-spacing: 1rem;
   background: transparent;
   padding: calc(var(--size) / 3) var(--size);
   border: none;

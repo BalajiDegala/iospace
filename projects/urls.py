@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from projects.views import home, about, show_projects, show_sequences, show_shots, show_tasks, show_users, get_time_data, show_my_tasks, task_detail
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
  path('admin/', admin.site.urls),
@@ -17,6 +19,6 @@ urlpatterns = [
  path('tasks/<str:project_name>/<str:sequence_name>/<str:shot_name>/', show_tasks, name = "task"),
  path('', home),
  path('about/', about),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 
