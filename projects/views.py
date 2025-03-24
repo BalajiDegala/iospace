@@ -15,7 +15,9 @@ from pprint import pprint
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
+from django.contrib import messages
 import logging
+import requests
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -29,29 +31,61 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
-
 def show_projects(request):
     val = dd_io()
     projects = val.io_get_projects()
     context = {"projects": projects}
-    print(context)
     return render(request, 'projects.html', context)
-
+def add_project(request):
+    if request.method == "POST":
+        project_name = request.POST.get("project_name")
+        print("project_name",project_name)
+        if project_name:
+            val = dd_io(project=project_name)
+            result = val.io_create_project()
+            print("result",result)
+            messages.success(request, result)
+        else:
+            messages.error(request, "Project name cannot be empty.")
+    return redirect('proj')
 def show_sequences(request, project_name):
     val = dd_io(project_name)
     sequences = val.io_get_sequences()
     context = {"project_name": project_name, "sequences": sequences}
     return render(request, 'sequences.html', context)
+def add_sequence(request, project_name):
+    if request.method == "POST":
+        sequence_name = request.POST.get("sequence_name")
+        if sequence_name:
+            val = dd_io(project=project_name, seq=sequence_name)
+            result = val.io_create_sequence()
+            print("result",result)
+            messages.success(request, result)
+        else:
+            messages.error(request, "Sequence name cannot be empty.")
+    return redirect('seq', project_name=project_name)
 def show_shots(request, project_name, sequence_name):
     val = dd_io(project_name, sequence_name)
     shots = val.io_get_shots()
     context = {"project_name": project_name, "sequence_name": sequence_name, "shots": shots}
     return render(request, 'shots.html', context)
+def add_shot(request, project_name, sequence_name):
+    if request.method == "POST":
+        shot_name = request.POST.get("shot_name")
+        if shot_name:
+            val = dd_io(project=project_name, seq=sequence_name, shot=shot_name)
+            result = val.io_create_shot()
+            print("result", result)
+            messages.success(request, result)
+        else:
+            messages.error(request, "Shot name cannot be empty.")
+    return redirect('shot', project_name=project_name, sequence_name=sequence_name)
 def show_tasks(request, project_name, sequence_name, shot_name):
     val = dd_io(project_name, sequence_name, shot_name)
     tasks = val.io_get_tasks()
     context = {"shot_name": shot_name ,"project_name": project_name, "sequence_name": sequence_name, "tasks": tasks}
     return render(request, 'tasks.html', context)
+
 def show_users(request):
     val = dd_io()
     users = val.io_get_users()
@@ -171,3 +205,126 @@ def get_time_data(request):
 
     logger.debug(f"Rendered context: {context}")
     return render(request, 'timecard.html', context)
+
+def get_access_token():
+    login_url = "http://localhost:5000/api/auth/login"
+    credentials = {"name": "balajid", "password": "Gotham9!"}
+    try:
+        response = requests.post(login_url, json=credentials)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        response_data = response.json()
+        print(f"Login response: {response_data}")  # Debug the response
+        token = response_data.get("token")  # Retrieve the token key
+        if not token:
+            raise ValueError("No access token found in response.")
+        return token
+    except requests.exceptions.RequestException as e:
+        print(f"RequestException: {e}")
+    except ValueError as ve:
+        print(f"ValueError: {ve}")
+    return None
+
+
+
+def graphql_projects_view(request):
+    # Define the GraphQL query
+    query = """
+        {
+        projects {
+            edges {
+            node {
+                active
+                allAttrib
+                code
+                createdAt
+                data
+                name
+                library
+                projectName
+            }
+            }
+        }
+        }
+    """
+    # Replace with your GraphQL API endpoint
+    endpoint = "http://localhost:5000/graphql"
+
+    # Replace with your actual token
+    access_token = get_access_token()
+    print("access_token",access_token)
+
+    try:
+        # Fetch data from the GraphQL API with the access token
+        response = requests.post(
+            endpoint,
+            json={"query": query},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {access_token}"
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+        projects = data.get("data", {}).get("projects", {}).get("edges", [])
+    except requests.exceptions.RequestException as e:
+        projects = []
+        print(f"Error fetching GraphQL data: {e}")
+
+    context = {"projects": projects}
+    return render(request, 'ql_projects.html', context)
+
+@csrf_exempt
+def edit_project(request, project_id):
+    # Define the REST API endpoint
+    api_url = f"http://localhost:5000/api/projects/{project_id}"
+
+    if request.method == "POST":
+        # Get updated data from the form
+        project_name = request.POST.get("project_name")
+        description = request.POST.get("description")
+
+        # Prepare the data payload for the REST API
+        data = {
+            "name": project_name,
+            "description": description
+        }
+
+        # Send the update request to the REST API
+        access_token = get_access_token()  # Fetch the access token
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        }
+
+        try:
+            response = requests.put(api_url, json=data, headers=headers)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                messages.success(request, "Project updated successfully!")
+            else:
+                messages.error(request, f"Failed to update project: {response.json().get('message', 'Unknown error')}")
+
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"Error connecting to API: {e}")
+
+        # Redirect back to the projects list
+        return redirect("proj")
+
+    # Fetch existing project data for pre-filling the form
+    access_token = get_access_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    try:
+        response = requests.get(api_url, headers=headers)
+        response.raise_for_status()
+        project_data = response.json()
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"Error fetching project details: {e}")
+        project_data = {}
+
+    return render(request, "edit_project.html", {"project": project_data})
+

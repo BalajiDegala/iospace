@@ -9,6 +9,38 @@
 <!-- Top Button -->
 <a href='{% url "proj" %}' class="btn mb-4"> {{ project_name }}</a>
 
+
+<!-- Add Sequence Button -->
+<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addSequenceModal">
+  Add New Sequence
+</button>
+
+<!-- Add Sequence Modal -->
+<div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSequenceModalLabel">Add New Sequence</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'add_sequence' project_name %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="sequenceName" class="form-label">Sequence Name</label>
+            <input type="text" class="form-control" id="sequenceName" name="sequence_name" placeholder="Enter sequence name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Sequence</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <!-- Sequences -->
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="sequencesContainer">
   {% for sequence in sequences %}

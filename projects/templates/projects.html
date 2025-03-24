@@ -9,6 +9,34 @@
 <!-- Top Button -->
 <a href='{% url "proj" %}' class="btn mb-4">DD</a>
 
+<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+  Add New Project
+</button>
+
+<div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addProjectModalLabel">Add New Project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'add_project' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="projectName" class="form-label">Project Name</label>
+            <input type="text" class="form-control" id="projectName" name="project_name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Projects -->
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="projectsContainer">
   {% for project in projects %}

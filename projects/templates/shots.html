@@ -9,6 +9,37 @@
 <!-- Top Button -->
 <a href='{% url "seq" project_name  %}' class="btn mb-4"> {{ sequence_name }}</a>
 
+<!-- New Shot Button -->
+<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addShotModal">
+  Add New Shot
+</button>
+
+<!-- Modal for Adding a New Shot -->
+<div class="modal fade" id="addShotModal" tabindex="-1" aria-labelledby="addShotModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addShotModalLabel">Add New Shot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'add_shot' project_name sequence_name %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="shotName" class="form-label">Shot Name</label>
+            <input type="text" class="form-control" id="shotName" name="shot_name" placeholder="Enter shot name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Shot</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <!-- Sequences -->
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="sequencesContainer">
   {% for shot in shots %}
