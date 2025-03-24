@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Shots in {{ project.name }}{% endblock %}
+
+{% block content %}
+    <h1>Shots in {{ project.name }}</h1>
+    <a href="{% url 'shot_create' project.name %}" class="btn btn-primary mb-3">Create New Shot</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Label</th>
+                <th>Sequence</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shot in shots %}
+                <tr>
+                    <td><a href="{% url 'shot_detail' project.name shot.id %}">{{ shot.name }}</a></td>
+                    <td>{{ shot.label }}</td>
+                    <td>{{ folder_map|get_item:shot.folder_id }}</td>
+                    <td>
+                        <a href="{% url 'shot_update' project.name shot.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'shot_delete' project.name shot.id %}" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

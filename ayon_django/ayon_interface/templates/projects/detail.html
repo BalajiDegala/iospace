@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ project.name }}</h1>
+    <p><strong>Code:</strong> {{ project.code }}</p>
+    <p><strong>Status:</strong> {{ project.active|yesno:"Active,Inactive" }}</p>
+    <p><strong>Description:</strong> {{ project.description }}</p>
+
+    <h2>Sequences</h2>
+    <p>Total Sequences: {{ sequences_count }}</p>
+    <ul>
+        {% for sequence in sequences %}
+            <li>{{ sequence.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Shots</h2>
+    <p>Total Shots: {{ shots_count }}</p>
+    <ul>
+        {% for shot in shots %}
+            <li>{{ shot.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Tasks</h2>
+    <p>Total Tasks: {{ tasks_count }}</p>
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task.name }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if project.name %}
+         <a href="{% url 'project_update' project.name %}" class="btn btn-warning">Edit Project</a>
+    {% endif %}
+    <a href="{% url 'project_delete' project.name %}" class="btn btn-danger">Delete Project</a>
+{% endblock %}

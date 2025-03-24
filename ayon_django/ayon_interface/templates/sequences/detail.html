@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Sequences in {{ project.name }}{% endblock %}
+
+{% block content %}
+    <h1>Sequences in {{ project.name }}</h1>
+    <a href="{% url 'sequence_create' project.name %}" class="btn btn-primary mb-3">Create New Sequence</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Label</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sequence in sequences %}
+                <tr>
+                    <td><a href="{% url 'sequence_detail' project.name sequence.id %}">{{ sequence.name }}</a></td>
+                    <td>{{ sequence.label }}</td>
+                    <td>
+                        <a href="{% url 'sequence_update' project.name sequence.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'sequence_delete' project.name sequence.id %}" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

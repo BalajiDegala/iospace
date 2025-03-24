@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ shot.name }} in {{ project.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ shot.name }} in {{ project.name }}</h1>
+    <p><strong>Label:</strong> {{ shot.label }}</p>
+    <p><strong>Sequence:</strong> {{ sequence.name }}</p>
+    <p><strong>Status:</strong> {{ shot.status }}</p>
+    <p><strong>Description:</strong> {{ shot.description }}</p>
+
+    <h2>Tasks for this Shot</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'shot_update' project.name shot.id %}" class="btn btn-warning">Edit Shot</a>
+    <a href="{% url 'shot_delete' project.name shot.id %}" class="btn btn-danger">Delete Shot</a>
+{% endblock %}

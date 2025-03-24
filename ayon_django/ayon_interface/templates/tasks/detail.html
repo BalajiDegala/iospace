@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.name }} in {{ project.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ task.name }} in {{ project.name }}</h1>
+    <p><strong>Label:</strong> {{ task.label }}</p>
+    <p><strong>Shot:</strong> {{ task.product_id }}</p>
+    <p><strong>Status:</strong> {{ task.status }}</p>
+    <p><strong>Description:</strong> {{ task.description }}</p>
+
+    <a href="{% url 'task_update' project.name task.id %}" class="btn btn-warning">Edit Task</a>
+    <a href="{% url 'task_delete' project.name task.id %}" class="btn btn-danger">Delete Task</a>
+{% endblock %}

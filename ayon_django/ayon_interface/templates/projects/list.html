@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+    <h1>Projects</h1>
+    <a href="{% url 'project_create' %}" class="btn btn-primary mb-3">Create New Project</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td><a href="{% url 'project_detail' project.name %}">{{ project.name }}</a></td>
+                    <td>{{ project.code }}</td>
+                    <td>{{ project.active|yesno:"Active,Inactive" }}</td>
+                    <td>
+                        <a href="{% url 'project_update' project.name %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'project_delete' project.name %}" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

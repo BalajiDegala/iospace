@@ -1,0 +1,52 @@
+<nav id="sidebar" class="bg-dark text-light">
+    <div class="sidebar-header">
+        <h3>AYON Manager</h3>
+    </div>
+
+    <ul class="list-unstyled components">
+        <li {% if request.path == '/' %}class="active"{% endif %}>
+            <a href="{% url 'dashboard' %}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
+        
+        <li {% if '/projects/' in request.path %}class="active"{% endif %}>
+            <a href="#projectsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="bi bi-folder me-2"></i> Projects
+            </a>
+            <ul class="collapse list-unstyled {% if '/projects/' in request.path %}show{% endif %}" id="projectsSubmenu">
+                <li>
+                    <a href="{% url 'project_list' %}">All Projects</a>
+                </li>
+                <li>
+                    <a href="{% url 'project_create' %}">New Project</a>
+                </li>
+                {% if project %}
+                <li>
+                    <a href="{% url 'project_detail' project_name=project.name %}">{{ project.name }}</a>
+                </li>
+                {% endif %}
+            </ul>
+        </li>
+
+        {% if project %}
+        <li {% if '/sequences/' in request.path %}class="active"{% endif %}>
+            <a href="{% url 'sequence_list' project_name=project.name %}">
+                <i class="bi bi-collection me-2"></i> Sequences
+            </a>
+        </li>
+        
+        <li {% if '/shots/' in request.path %}class="active"{% endif %}>
+            <a href="{% url 'shot_list' project_name=project.name %}">
+                <i class="bi bi-camera-reels me-2"></i> Shots
+            </a>
+        </li>
+        
+        <li {% if '/tasks/' in request.path %}class="active"{% endif %}>
+            <a href="{% url 'task_list' project_name=project.name %}">
+                <i class="bi bi-check2-square me-2"></i> Tasks
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
