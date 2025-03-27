@@ -1,9 +1,45 @@
 {% extends "home.html" %}
 {% block content %}
 
-<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
-<a href='{% url "proj"  %}' class="btn"> {{ sequence_name }}</a>
-<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+<a href='{% url "proj"  %}' class="btn mb-4"> {{ project_name }}</a>
+<a href='{% url "seq" project_name  %}' class="btn mb-4"> {{ sequence_name }}</a>
+<a href='{% url "shot" sequence_name project_name  %}' class="btn mb-4"> {{ shot_name }}</a>
+<!-- Add Sequence Button -->
+<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+  Add New Task
+</button>
+
+<!-- Modal for Adding a New Shot -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'add_task' project_name sequence_name shot_name %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="taskName" class="form-label">Task Name</label>
+            <input type="text" class="form-control" id="taskName" name="task_name" placeholder="Enter task name" required>
+            <input list="taskType" class="form-control" name="task_type" placeholder="Enter task type name" required>
+            <datalist id="taskType" name="task_name">
+              <option value="Paint">Paint</option>
+              <option value="Compositing">Compositing</option>
+              <option value="Roto">Roto</option>
+              <option value="Art">Art</option>
+            </datalist>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="row row-cols-5">
   {% for task in tasks %}

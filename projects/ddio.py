@@ -6,15 +6,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+class RequestType:
+    def __init__(self, name: str):
+        self.name: str = name
+
+    def __hash__(self):
+        return self.name.__hash__()
+
+
+
+class RequestTypes:
+    get = RequestType("GET")
+    post = RequestType("POST")
+    put = RequestType("PUT")
+    patch = RequestType("PATCH")
+    delete = RequestType("DELETE")
+
 class dd_io():
-    def __init__(self, project=None, seq = None, shot = None , user= None):
+    def __init__(self, project=None, seq = None, shot = None , task = None , user= None):
         self.project = project
         self.seq = seq
         self.shot = shot
         self.user = user
+        self.task = task
         self.con = ayon_api.GlobalServerAPI()
         self.con.login("balajid", "Gotham9!")
-
 
     def io_get_projects(self):
         ayon_projects = self.con.get_projects()
@@ -31,6 +47,23 @@ class dd_io():
         return users
         
     def io_get_tasks(self):
+        tasks = self.con.get_tasks(self.project)
+        return [task for task in tasks]
+
+    def io_update_task(self, task_id, **kwargs):
+        if not self.project:
+            raise ValueError("Project name must be specified to update a task.")
+        
+        update_data = {key: value for key, value in kwargs.items() if value is not None}
+        
+        try:
+            self.con.update_task(project_name=self.project, task_id=task_id, **update_data)
+            return f"Task with ID {task_id} updated successfully."
+        except Exception as e:
+            return f"Failed to update task: {e}"
+
+
+    def io_get_shot_tasks(self):
         shot_id = self.io_get_shot_id()
         if shot_id is not None:
             ayon_tasks = self.con.get_tasks(self.project, folder_ids = [shot_id])
@@ -41,9 +74,9 @@ class dd_io():
             tasks.append(task)
         return tasks
 
-    def io_get_task(self, task_id):
-        if task_id is not None:
-            ayon_tasks = self.con.get_tasks("HYD", task_ids = task_id)
+    def io_get_task(self,task_id):
+        if task_id :
+            ayon_tasks = self.con.get_tasks(self.project, task_ids = task_id)
         else :
             print("Please check for task ID")
             return None
@@ -63,6 +96,52 @@ class dd_io():
         except Exception as e:
             print(f"Error fetching tasks: {e}")
             return []
+
+    def io_get_folders(self):
+        ayon_folders = self.con.get_folders(self.project)
+        folders = []
+        for folder in ayon_folders:
+            folders.append(folder)
+        return folders
+    
+    def io_update_folder(
+        self,
+        folder_id: str,
+        name=None,
+        folder_type=None,
+        label=None,
+        attrib=None,
+        status=None,
+        active=None,
+    ):
+        """Update folder attributes for a specific folder."""
+        if not self.project:
+            raise ValueError("Project name must be specified to update a folder.")
+
+        # Prepare the update data
+        update_data = {}
+        for key, value in (
+            ("name", name),
+            ("folderType", folder_type),
+            ("label", label),
+            ("attrib", attrib),
+            ("status", status),
+            ("active", active),
+        ):
+            if value is not None:
+                update_data[key] = value
+
+        # Call the API update method
+        try:
+            self.con.update_folder(
+                project_name=self.project,
+                folder_id=folder_id,
+                **update_data
+            )
+            return f"Folder with ID {folder_id} updated successfully."
+        except Exception as e:
+            return f"Failed to update folder: {e}"
+
 
 
     def io_get_sequences(self):
@@ -121,8 +200,16 @@ class dd_io():
         except Exception as e :
             return f"Failed to create shot: {e}" 
 
-    def io_create_task(self):
-        pass
+    def io_create_task(self, task_type):
+        try:
+            get_shot = self.con.get_folder_by_path(self.project,f"{self.seq}/{self.shot}")
+            shot_id = get_shot["id"]
+            print("shot_id",get_shot)
+            self.con.create_task(self.project, self.task ,  task_type = task_type , folder_id = shot_id )
+            return f"{self.task} Shot Created successfully on {self.shot} Shot on {self.seq} {self.project} project"
+        except Exception as e :
+            return f"Failed to create shot: {e}" 
+        
 
     def io_get_events(self):
         ayon_events = self.con.get_events(limit=100)

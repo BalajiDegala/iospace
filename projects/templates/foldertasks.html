@@ -1,0 +1,177 @@
+{% extends "home.html" %}
+{% block content %}
+{% load custom_filters %}
+
+<h1>Tasks</h1>
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="project_name">Select Project:</label>
+        <select id="project_name" name="project_name" required>
+            <option value="" disabled selected>-- Select a project --</option>
+            {% for project in projects %}
+            <option value="{{ project }}" {% if project == selected_project %}selected{% endif %}>
+                {{ project }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+{% if tasks %}
+<h2>Tasks for {{ selected_project }}</h2>
+<table id="tasksTable" class="display">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Assignees</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr data-task-id="{{ task.id }}">
+            <td contenteditable="true" data-field="name">{{ task.name }}</td>
+            <td>
+                <select class="taskType-select">
+                    {% for type in dropdown_data.taskTypes %}
+                    <option value="{{ type }}" {% if type == task.taskType %}selected{% endif %}>
+                        {{ type }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="status-select">
+                    {% for status in dropdown_data.statuses %}
+                    <option value="{{ status }}" {% if status == task.status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td contenteditable="true" data-field="priority">{{ task.attrib.priority }}</td>
+
+            <td>
+                <input type="date" class="date-input start-date " 
+                       value="{{ task.attrib.startDate|format_iso_date }}">
+            </td>
+            
+            <td>
+                <input type="date" class="date-input end-date" 
+                       value="{{ task.attrib.endDate|format_iso_date }}">
+            </td>
+            
+            <td>
+                <ul class="assigned-users">
+                    {% for user in task.assignees %}
+                    <li data-user="{{ user }}">
+                        <button type="button" class="remove-user-btn" style="scale: 0.5;">x</button>
+                        {{ user }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <input type="text" class="user-autocomplete" placeholder="Add user" />
+            </td>
+            
+            <td>
+                <button class="save-btn">Save</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tasks to display. Select a project to fetch tasks.</p>
+{% endif %}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#tasksTable').DataTable();
+
+        $('.user-autocomplete').autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/autocomplete/users/",
+                    data: { term: request.term },
+                    success: function (data) {
+                        response(data.users); 
+                    },
+                });
+            },
+            select: function (event, ui) {
+                const newUser = ui.item.value;
+                const inputField = $(this);
+                const userList = inputField.siblings('.assigned-users');
+
+                if (!userList.children().filter((_, li) => $(li).data('user') === newUser).length) {
+                    userList.append(
+                        `<li data-user="${newUser}">${newUser} <button type="button" class="remove-user-btn" style="scale: 0.5;">x</button></li>`
+                    );
+                }
+                inputField.val('');
+                return false;
+            },
+        });
+
+        $(document).on('click', '.remove-user-btn', function () {
+            $(this).closest('li').remove();
+        });
+
+        $('.save-btn').click(function () {
+            const row = $(this).closest('tr');
+            const taskId = row.data('task-id');
+            const projectName = "{{ selected_project }}";
+
+            const assignedUsers = [];
+            row.find('.assigned-users li').each(function () {
+                assignedUsers.push($(this).data('user'));
+            });
+
+            const updatedData = {
+                assignees: assignedUsers,
+                name: row.find('[data-field="name"]').text().trim(),
+                taskType: row.find('.taskType-select').val(),
+                status: row.find('.status-select').val(),
+                priority: row.find('[data-field="priority"]').text().trim(),
+                startDate: row.find('.start-date').val(),
+                endDate: row.find('.end-date').val(),
+            };
+
+            const updateUrl = `/tasks/${projectName}/${taskId}/update/`;
+
+            $.ajax({
+                url: updateUrl,
+                method: "PATCH",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                data: JSON.stringify(updatedData),
+                contentType: "application/json",
+                success: function (response) {
+                    if (response.success) {
+                        alert("Task updated successfully!");
+                    } else {
+                        alert("Error updating task: " + response.message);
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while updating the task.");
+                },
+            });
+        });
+    });
+
+</script>
+{% endblock %}

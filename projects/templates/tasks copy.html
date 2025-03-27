@@ -1,0 +1,22 @@
+{% extends "home.html" %}
+{% block content %}
+
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+<a href='{% url "proj"  %}' class="btn"> {{ sequence_name }}</a>
+<a href='{% url "proj"  %}' class="btn"> {{ project_name }}</a>
+
+<div class="row row-cols-5">
+  {% for task in tasks %}
+  <div class="col">
+    <div class="card" >
+      <a href="{% url 'task_detail' task.id %}">
+      <img src="https://robohash.org/{{ task }}" class="img-fluid rounded-start" alt="{{ task }}">
+        {{ task.name }}
+    </a>
+    
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

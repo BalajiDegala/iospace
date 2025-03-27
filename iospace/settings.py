@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import ldap
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, PosixGroupType
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'projects'
+    'projects',
+    "corsheaders"
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -53,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware"
 ]
 
 ROOT_URLCONF = 'iospace.urls'
@@ -121,6 +125,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -136,6 +141,90 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# LDAP Server URI
+AUTH_LDAP_SERVER_URI = "ldap://hb-dc-01.d2-india.com"
+
+main_dn = 'DC=d2-india,DC=com'
+groups_dn = 'OU=Groups,'+main_dn
+users_dn = 'OU=Users,'+main_dn
+
+# Binding user credentials
+AUTH_LDAP_BIND_DN = "CN=ad-reader-svc,OU=service-accounts,OU=production,OU=users,OU=active,OU=d2-india,DC=d2-india,DC=com"
+AUTH_LDAP_BIND_PASSWORD =  "byGTtqBmAk8j4bP5nXDM"
+
+# User search base and filter
+AUTH_LDAP_MIRROR_GROUPS = True
+
+
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    "OU=users,OU=active,OU=d2-india,DC=d2-india,DC=com",
+    ldap.SCOPE_SUBTREE,
+    "(sAMAccountName=%(user)s)"  # Adjust based on your LDAP server
+)
+
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    "OU=groups,OU=active,OU=d2-india,DC=d2-india,DC=com",
+    ldap.SCOPE_SUBTREE,
+    "(objectClass=cgi)"  # Adjust based on your LDAP server
+)
+
+AUTH_LDAP_REQUIRE_GROUP = "CN=cgi,OU=groups,OU=active,OU=d2-india,DC=d2-india,DC=com"
+
+
+AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+    "username":"uid",
+    "password":"userPassword",
+}
+
+# Mirror LDAP groups in Django
+
+# Cache groups for performance
+AUTH_LDAP_CACHE_TIMEOUT = 3600
+
+# Automatically create Django user accounts for LDAP users
+AUTH_LDAP_CREATE_USERS = True  # Add users to the Django database upon first login
+AUTH_LDAP_ALWAYS_UPDATE_USER = True  # Always sync LDAP attributes to Django user fields
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Default Django authentication
+]
+
+
+LOGIN_REDIRECT_URL = '/'  # Redirect to the home page after login
+LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login page after logout
+LOGIN_URL = '/login/'
+# Enable LDAP logging for debugging
+import logging
+logger = logging.getLogger('django_auth_ldap')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
+
+
+
+
+def custom_populate_user(ldap_user, user):
+    user.is_staff = True  # Required for admin access
+    user.is_superuser = True  # Optional, grants full admin rights
+    user.save()
+
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    "is_staff": "cn=cgi,ou=groups,ou=active,ou=d2-india,dc=d2-india,dc=com",
+    "is_superuser": "cn=admins,ou=groups,ou=active,ou=d2-india,dc=d2-india,dc=com",
+}
+
+AUTH_LDAP_POPULATE_USER = custom_populate_user
+
 
 
 

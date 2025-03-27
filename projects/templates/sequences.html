@@ -1,19 +1,20 @@
 {% extends "home.html" %}
 {% block content %}
 
+<!-- Top Button -->
+<a href='{% url "proj" %}' class="btn mb-4"> {{ project_name }}</a>
+<!-- Add Sequence Button -->
+<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addSequenceModal">
+  Add New Sequence
+</button>
+
+
 <!-- Search Input -->
 <div class="mb-4">
   <input type="text" id="searchInput" class="form-control" placeholder="Search for a sequence..." onkeyup="filterSequences()">
 </div>
 
-<!-- Top Button -->
-<a href='{% url "proj" %}' class="btn mb-4"> {{ project_name }}</a>
 
-
-<!-- Add Sequence Button -->
-<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addSequenceModal">
-  Add New Sequence
-</button>
 
 <!-- Add Sequence Modal -->
 <div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">

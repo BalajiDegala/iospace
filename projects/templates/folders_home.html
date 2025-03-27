@@ -1,0 +1,128 @@
+{% extends "home.html" %}
+{% block content %}
+<h1>Tasks</h1>
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="project_name">Select Project:</label>
+        <select id="project_name" name="project_name" required>
+            <option value="" disabled selected>-- Select a project --</option>
+            {% for project in projects %}
+            <option value="{{ project }}" {% if project == selected_project %}selected{% endif %}>
+                {{ project }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+{% if tasks %}
+<h2>Tasks for {{ selected_project }}</h2>
+<table id="tasksTable" class="display">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Folder Type</th>
+            <th>Link Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr data-task-id="{{ task.id }}">
+            <td contenteditable="true" data-field="name">{{ task.name }}</td>
+            <td>
+                <select class="task-type-select">
+                    {% for type in dropdown_data.taskTypes %}
+                    <option value="{{ type }}" {% if type == task.taskType %}selected{% endif %}>
+                        {{ type }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="status-select">
+                    {% for status in dropdown_data.statuses %}
+                    <option value="{{ status }}" {% if status == task.status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="folder-type-select">
+                    {% for folder in dropdown_data.folderTypes %}
+                    <option value="{{ folder }}">{{ folder }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="link-type-select">
+                    {% for link in dropdown_data.linkTypes %}
+                    <option value="{{ link }}">{{ link }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <button class="save-btn">Save</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tasks to display. Select a project to fetch tasks.</p>
+{% endif %}
+
+<!-- Include DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+      $('#tasksTable').DataTable();
+
+      // Save button handler
+      $('.save-btn').click(function () {
+          const row = $(this).closest('tr');
+          const taskId = row.data('task-id');
+          const projectName = "{{ selected_project }}";
+
+          const updatedData = {
+              name: row.find('[data-field="name"]').text().trim(),
+              taskType: row.find('.task-type-select').val(),
+              status: row.find('.status-select').val(),
+              folderType: row.find('.folder-type-select').val(),
+              linkType: row.find('.link-type-select').val(),
+          };
+
+          const updateUrl = `/tasks/${projectName}/${taskId}/update/`;
+
+          // Send AJAX request to update task
+          $.ajax({
+              url: updateUrl,
+              method: "PATCH",
+              headers: {
+                  "X-CSRFToken": "{{ csrf_token }}"
+              },
+              data: JSON.stringify(updatedData),
+              contentType: "application/json",
+              success: function (response) {
+                  if (response.success) {
+                      alert("Task updated successfully!");
+                  } else {
+                      alert("Error updating task: " + response.message);
+                  }
+              },
+              error: function () {
+                  alert("An error occurred while updating the task.");
+              },
+          });
+      });
+  });
+</script>
+{% endblock %}

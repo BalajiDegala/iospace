@@ -7,7 +7,7 @@
   --clr-star: #E9F8F9;
   --size: 8rem;
   position: relative;
-  outline: 1px solid var(--clr-shadow__border);
+  outline: 10px solid var(--clr-shadow__border);
 }
 
 .button {

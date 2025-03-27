@@ -1,0 +1,109 @@
+{% extends "home.html" %}
+{% block content %}
+{% load custom_filters %}
+<h1>Folders</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="project_name">Select Project:</label>
+        <select id="project_name" name="project_name" required>
+            <option value="" disabled selected>-- Select a project --</option>
+            {% for project in projects %}
+            <option value="{{ project }}" {% if project == selected_project %}selected{% endif %}>
+                {{ project }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+<!-- Display Folders Table -->
+{% if folders %}
+<h2>Folders for {{ selected_project }}</h2>
+<table id="foldersTable" class=" table-dark">
+    <thead>
+        <tr>
+            <th scope="col" >Name</th>
+            <th scope="col" >Label</th>
+            <th scope="col" >Path</th>
+            <th scope="col" >Sequence</th>
+            <th scope="col" >Shot</th>
+            <th scope="col" >Type</th>
+            <th scope="col" >Status</th>
+            <th scope="col" >Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for folder in folders %}
+        <tr data-folder-id="{{ folder.id }}">
+            <td contenteditable="true" data-field="name">{{ folder.name }}</td>
+            <td contenteditable="true" data-field="label">{{ folder.label }}</td>
+            <td>{{ folder.path }}</td>
+            <td>{{ folder.path|get_sequence }}</td>
+            <td>{{ folder.path|get_shot }}</td>
+            <td contenteditable="true" data-field="folder_type">{{ folder.folderType }}</td>
+            <td contenteditable="true" data-field="status">{{ folder.status }}</td>
+            <td>
+                <button class="save-btn">Save</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No folders to display. Select a project to fetch folders.</p>
+{% endif %}
+
+<!-- Include DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<!-- Inside the script block -->
+<script>
+  $(document).ready(function () {
+      $('#foldersTable').DataTable();
+
+      // Save button handler
+      $('.save-btn').click(function () {
+          const row = $(this).closest('tr');
+          const folderId = row.data('folder-id');
+          const projectName = "{{ selected_project }}";
+
+          const updatedData = {};
+          row.find('[contenteditable="true"]').each(function () {
+              const field = $(this).data('field');
+              const value = $(this).text().trim();
+              updatedData[field] = value;
+          });
+
+          // Construct URL for updating folder
+          const updateUrl = `/folders/${projectName}/${folderId}/update/`;
+
+          // Send AJAX request to update folder
+          $.ajax({
+              url: updateUrl,
+              method: "PATCH",
+              headers: {
+                  "X-CSRFToken": "{{ csrf_token }}"
+              },
+              data: JSON.stringify(updatedData),
+              contentType: "application/json",
+              success: function (response) {
+                  if (response.success) {
+                      alert("Folder updated successfully!");
+                  } else {
+                      alert("Error updating folder: " + response.message);
+                  }
+              },
+              error: function () {
+                  alert("An error occurred while updating the folder.");
+              },
+          });
+      });
+  });
+</script>
+
+{% endblock %}

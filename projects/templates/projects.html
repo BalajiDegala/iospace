@@ -38,7 +38,7 @@
 </div>
 
 <!-- Projects -->
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="projectsContainer">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3" id="projectsContainer">
   {% for project in projects %}
   <div class="col project-item">
     <a href="{% url 'seq' project %}" class="project-button text-decoration-none"
@@ -58,6 +58,7 @@
   .project-button {
       position: relative;
       display: block;
+      width: 450px;
       height: 200px;
       background: url('/static/gifs/japan.gif') no-repeat center;
       background-size: cover;

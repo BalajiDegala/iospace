@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .editable {
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    .save-btn {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Projects Management</h1>
+  
+  <button onclick="fetchProjects()">Load Projects</button>
+  <div id="projects-container">
+    <h2>Projects List</h2>
+    <table id="projects-table">
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Project Code</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic rows will be added here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function fetchProjects() {
+      const projectsTableBody = document.querySelector("#projects-table tbody");
+      projectsTableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+      try {
+        const response = await fetch("/get-projects");
+        if (!response.ok) throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        const projects = await response.json();
+
+        projectsTableBody.innerHTML = ""; // Clear the table body
+
+        projects.projects.forEach(project => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td contenteditable="true" class="editable" data-key="name">${project.name}</td>
+            <td contenteditable="true" class="editable" data-key="code">${project.code}</td>
+            <td contenteditable="true" class="editable" data-key="active">${project.active ? "Yes" : "No"}</td>
+            <td>
+              <button onclick="saveProject(this, '${project.name}')">Save</button>
+            </td>
+          `;
+          projectsTableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error("Fetch error:", error);
+        projectsTableBody.innerHTML = `<tr><td colspan='4'>Error: ${error.message}</td></tr>`;
+      }
+    }
+
+    async function saveProject(button, originalName) {
+        const row = button.closest("tr");
+        const cells = row.querySelectorAll("[contenteditable]");
+        const updatedData = {};
+
+        cells.forEach(cell => {
+            const key = cell.getAttribute("data-key");
+            let value = cell.innerText.trim();
+            if (key === "active") {
+                value = value.toLowerCase() === "yes";
+            }
+            updatedData[key] = value;
+        });
+
+        console.log("Data being sent:", updatedData);
+
+        try {
+            const response = await fetch(`/update-project/${originalName}/`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+            const result = await response.json();
+            alert(`Project updated successfully: ${JSON.stringify(result)}`);
+            fetchProjects(); // Refresh the project list
+        } catch (error) {
+            console.error("Failed to update project:", error);
+            alert(`Failed to update project: ${error.message}`);
+        }
+    }
+
+  </script>
+</body>
+</html>
+
